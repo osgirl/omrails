@@ -1,10 +1,6 @@
-require 'open-uri'
-
 class Pin < ActiveRecord::Base
-  belongs_to :user
-  attr_accessible :description, :image, :image_url
+  attr_accessible :description, :image
 
-  has_attached_file :image, styles: { medium: "320x240>"}
 
   validates :description, presence: true
   validates :user_id, presence: true
@@ -12,27 +8,6 @@ class Pin < ActiveRecord::Base
   														 content_type: { content_type: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'] },
   														 size: { less_than: 5.megabytes }
 
-
-  # Remote image downloading
-  attr_accessor :image_url
-  before_validation :download_remote_image, :if => :image_url_provided?
-
-  private
-  
-    def image_url_provided?
-      !self.image_url.blank?
-    end
-    
-    def download_remote_image
-      self.image = URI.parse(image_url)
-      # self.image_remote_url = image_url
-    end
-    
-    def do_download_remote_image
-      io = open(URI.parse(image_url))
-      def io.original_filename; base_uri.path.split('/').last; end
-      io.original_filename.blank? ? nil : io
-    rescue # catch url errors with validations instead of exceptions (Errno::ENOENT, OpenURI::HTTPError, etc...)
-      print "An error occurred: ",$!, "\n"
-    end
+  belongs_to :user
+  has_attached_file :image, styles: { medium: "320x240>"}
 end
